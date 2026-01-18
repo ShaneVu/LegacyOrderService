@@ -31,9 +31,8 @@ namespace LegacyOrderService
             var connectionString = configuration.GetConnectionString("OrdersDatabase")
                 ?? $"Data Source={Path.Combine(AppContext.BaseDirectory, "orders.db")}";
 
-            services.AddSingleton<IProductRepository, ProductRepository>();
-            services.AddSingleton<IOrderRepository>(provider => new OrderRepository(connectionString));
-
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IOrderRepository>(provider => new OrderRepository(connectionString));
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IConsoleOrderUI, ConsoleOrderUI>();
 

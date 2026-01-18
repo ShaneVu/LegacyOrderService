@@ -20,7 +20,7 @@ namespace LegacyOrderService.Services
         {
             try
             {
-                var price = _productRepository.GetPrice(productName);
+                var price = await _productRepository.GetPriceAsync(productName);
                 if (price <= 0)
                     return new OrderResult(false, null, $"Product '{productName}' not found or invalid price.");
 
@@ -32,7 +32,7 @@ namespace LegacyOrderService.Services
                     Price = price
                 };
 
-                _orderRepository.Save(order);
+                await _orderRepository.SaveAsync(order);
 
                 return new OrderResult(true, order, null);
             }

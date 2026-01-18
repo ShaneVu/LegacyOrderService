@@ -8,8 +8,7 @@ namespace LegacyOrderService.Data
     {
         private string _connectionString = $"Data Source={Path.Combine(AppContext.BaseDirectory, "orders.db")}";
 
-
-        public void Save(Order order)
+        public Task SaveAsync(Order order)
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
@@ -24,7 +23,7 @@ namespace LegacyOrderService.Data
             command.Parameters.AddWithValue("@quantity", order.Quantity);
             command.Parameters.AddWithValue("@price", order.Price);
 
-            command.ExecuteNonQuery();
+            return command.ExecuteNonQueryAsync();
         }
 
         public void SeedBadData()

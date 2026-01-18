@@ -34,14 +34,12 @@ namespace LegacyOrderService.Services
             if (result.Success && result.Order != null)
             {
                 var order = result.Order;
-                var total = order.Quantity * order.Price;
-
                 Console.WriteLine("Order complete!");
                 Console.WriteLine($"Customer: {order.CustomerName}");
                 Console.WriteLine($"Product: {order.ProductName}");
                 Console.WriteLine($"Unit Price: ${order.Price:F2}");
                 Console.WriteLine($"Quantity: {order.Quantity}");
-                Console.WriteLine($"Total: ${total:F2}");
+                Console.WriteLine($"Total: ${order.totalPrice:F2}");
                 Console.WriteLine("Order saved to database.");
             }
             else

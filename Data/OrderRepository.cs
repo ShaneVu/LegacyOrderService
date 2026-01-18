@@ -4,7 +4,7 @@ using LegacyOrderService.Models;
 
 namespace LegacyOrderService.Data
 {
-    public class OrderRepository
+    public class OrderRepository : IOrderRepository
     {
         private string _connectionString = $"Data Source={Path.Combine(AppContext.BaseDirectory, "orders.db")}";
 
@@ -31,7 +31,7 @@ namespace LegacyOrderService.Data
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
-            
+
             using var cmd = connection.CreateCommand();
             cmd.CommandText = "INSERT INTO Orders (CustomerName, ProductName, Quantity, Price) VALUES (@name, @product, @qty, @price)";
             cmd.Parameters.AddWithValue("@name", "John");

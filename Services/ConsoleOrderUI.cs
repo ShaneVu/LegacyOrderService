@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 
 namespace LegacyOrderService.Services
 {
-    public class ConsoleOrderUI
+    public class ConsoleOrderUI : IConsoleOrderUI
     {
         private readonly IOrderService _orderService;
 
-        public ConsoleOrderUI(OrderService orderService) {
+        public ConsoleOrderUI(IOrderService orderService)
+        {
             _orderService = orderService;
         }
 
@@ -39,7 +40,7 @@ namespace LegacyOrderService.Services
                 Console.WriteLine($"Product: {order.ProductName}");
                 Console.WriteLine($"Unit Price: ${order.Price:F2}");
                 Console.WriteLine($"Quantity: {order.Quantity}");
-                Console.WriteLine($"Total: ${order.totalPrice:F2}");
+                Console.WriteLine($"Total: ${order.TotalPrice:F2}");
                 Console.WriteLine("Order saved to database.");
             }
             else

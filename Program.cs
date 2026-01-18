@@ -1,6 +1,8 @@
 using LegacyOrderService.Data;
 using LegacyOrderService.Models;
 using LegacyOrderService.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace LegacyOrderService
@@ -9,11 +11,33 @@ namespace LegacyOrderService
     {
         static async Task Main(string[] args)
         {
-            IProductRepository productRepo = new ProductRepository();
-            IOrderRepository orderRepo = new OrderRepository();
-            var orderService = new OrderService(productRepo, orderRepo);
-            var consoleUI = new ConsoleOrderUI(orderService);
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            var serviceProvider = ConfigureServices(configuration);
+
+            var consoleUI = serviceProvider.GetRequiredService<IConsoleOrderUI>();
             await consoleUI.ProcessOrderAsync();
+        }
+
+        private static ServiceProvider ConfigureServices(IConfiguration configuration)
+        {
+            var services = new ServiceCollection();
+
+            services.AddSingleton(configuration);
+
+            var connectionString = configuration.GetConnectionString("OrdersDatabase")
+                ?? $"Data Source={Path.Combine(AppContext.BaseDirectory, "orders.db")}";
+
+            services.AddSingleton<IProductRepository, ProductRepository>();
+            services.AddSingleton<IOrderRepository>(provider => new OrderRepository(connectionString));
+
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IConsoleOrderUI, ConsoleOrderUI>();
+
+            return services.BuildServiceProvider();
         }
     }
 }

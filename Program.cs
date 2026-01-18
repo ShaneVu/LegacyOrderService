@@ -1,46 +1,42 @@
-using System;
-using LegacyOrderService.Models;
 using LegacyOrderService.Data;
+using LegacyOrderService.Models;
+using LegacyOrderService.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace LegacyOrderService
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Welcome to Order Processor!");
-            Console.WriteLine("Enter customer name:");
-            string name = Console.ReadLine();
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
 
-            Console.WriteLine("Enter product name:");
-            string product = Console.ReadLine();
-            var productRepo = new ProductRepository();
-            double price = productRepo.GetPrice(product);
+            var serviceProvider = ConfigureServices(configuration);
 
+            var consoleUI = serviceProvider.GetRequiredService<IConsoleOrderUI>();
+            await consoleUI.ProcessOrderAsync();
+        }
 
-            Console.WriteLine("Enter quantity:");
-            int qty = Convert.ToInt32(Console.ReadLine());
+        private static ServiceProvider ConfigureServices(IConfiguration configuration)
+        {
+            var services = new ServiceCollection();
 
-            Console.WriteLine("Processing order...");
+            services.AddSingleton(configuration);
 
-            Order order = new Order();
-            order.CustomerName = name;
-            order.ProductName = product;
-            order.Quantity = qty;
-            order.Price = 10.0;
+            var connectionString = configuration.GetConnectionString("OrdersDatabase")
+                ?? $"Data Source={Path.Combine(AppContext.BaseDirectory, "orders.db")}";
 
-            double total = order.Quantity * order.Price;
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IOrderRepository>(provider => new OrderRepository(connectionString));
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IConsoleOrderUI, ConsoleOrderUI>();
 
-            Console.WriteLine("Order complete!");
-            Console.WriteLine("Customer: " + order.CustomerName);
-            Console.WriteLine("Product: " + order.ProductName);
-            Console.WriteLine("Quantity: " + order.Quantity);
-            Console.WriteLine("Total: $" + price);
-
-            Console.WriteLine("Saving order to database...");
-            var repo = new OrderRepository();
-            repo.Save(order);
-            Console.WriteLine("Done.");
+            return services.BuildServiceProvider();
         }
     }
 }
